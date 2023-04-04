@@ -8,10 +8,10 @@
 // @grant        unsafeWindow
 // ==/UserScript==
 
-(function() {
+(function () {
     'use strict';
 
-    function exportData(JsonExport){
+    function exportData(JsonExport) {
         const filename = 'equipment.json';
         const jsonStr = JSON.stringify(JsonExport);
 
@@ -27,7 +27,7 @@
         document.body.removeChild(element);
     }
 
-    function processRow(row){
+    function processRow(row, settings = {}) {
         const rowData = Array.from(row.children)
         const item = {
             name: rowData[0].textContent,
@@ -40,11 +40,13 @@
             bulk: rowData[9].textContent
         }
 
-        console.log(item)
+        if (settings.debug) {
+            console.log(rowData, item)
+        }
         return item
     }
 
-    function dataArchive(){
+    function dataArchive(mode = { save: false }) {
         // Grab nested table node reference
         const tableRef = document.querySelector('nethys-search').shadowRoot.querySelector('table')
 
@@ -55,8 +57,16 @@
         // Drop the first row of header information
         tableData.shift()
 
-        // Process data and trigger data export
-        exportData(tableData.map(processRow))
+        if (mode.save) {
+            // Process data and trigger data export
+            exportData(tableData.map(processRow))
+        } else {
+            // Run through data in debug mode
+            tableData.slice(0, 2).map((row) => {
+                processRow(row, { debug: true })
+            })
+        }
+
 
     }
 
